@@ -14,8 +14,15 @@ int mines = 0;
 
 
 int main() {
-    RenderWindow window(VideoMode(400, 400), "Minesweeper!");
+    Music music;
 
+
+    music.openFromFile("audio/MainMusic.ogg");
+    music.setVolume(50);
+
+    music.play();
+    RenderWindow window(VideoMode(320, 320), "Minesweeper!");
+    //Music music;
 
     srand(time(0));
 
@@ -32,8 +39,7 @@ int main() {
             if (rand() % 5 == 0) {
                 grid[i][j] = 9;
                 mines++;
-            }
-            else grid[i][j] = 0;
+            } else grid[i][j] = 0;
         }
     }
 
