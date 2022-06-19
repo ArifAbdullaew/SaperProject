@@ -8,7 +8,8 @@
 #Авторы 
 `Авторами данной идеи являеются студенты группы БИБ211 Абдуллаев Ариф и Ярославский Александр.`
 
-&copy; Данный проект не носит коммерческой цели и соблюдает права в соответствии Creative Commons Attribution NonCommercial. 
+&copy; Данный проект написан лишь в учебный целях, не носит коммерческой цели и соблюдает права в соответствии Creative Commons Attribution NonCommercial. 
+
 Почта авторов проекта: 
 ababdullaew@edu.hse.ru ababdullaew@miem.hse.ru 
 avyaroslavskiy@edu.hse.ru avyaroslavskiy@miem.hse.ru
