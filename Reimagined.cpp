@@ -20,7 +20,7 @@ sf::RenderWindow window(sf::VideoMode(450, 800), "Minesweeper");
 sf::Font font;
 
 namespace alone {
-    //container for managing textures
+    //контейнер для управления текстурками
     class TextureManager {
     public:
         void load(std::string config_name) {
@@ -45,7 +45,7 @@ namespace alone {
         std::unordered_map <std::string, sf::Texture> _Content;
     };
 
-    //basic state
+    //базовое состояние игры, от него насследуются все остальные
     class State : public sf::Drawable {
         friend class StateMachine;
     public:
@@ -56,7 +56,7 @@ namespace alone {
         };
 
     protected:
-        //I don't use delta time, because in this project this is unnecessary
+        //не стали использовать делту, ибо это бесполезно в сапёре
         virtual void update() = 0;
 
         virtual void onCreate() = 0;
@@ -79,8 +79,8 @@ namespace alone {
         }
 
         void update() {
-            //I had an issue, because pointer was lost and iteration was breaked
-            //that's why I added queue for deleting states
+           //была проблема с контейнером, нельзя во время иттерации элементы удалять
+			//поэтому мы сделали очередь для этих элементов
             std::queue <std::string> onRemove;
             for (auto& it : _Content) {
                 switch (it.second->_Status) {
@@ -110,8 +110,7 @@ namespace alone {
     };
 }
 
-//it's just a big crutch
-//I'm too lazy to create own handler for buttons and keys
+//просто большой костыль, не обращайте внимания
 namespace alone::input {
     bool preLmb = false, nowLmb = false;
     bool preRmb = false, nowRmb = false;
@@ -135,6 +134,7 @@ namespace alone::input {
 template <class _T>
 using Matrix = std::vector <std::vector <_T>>;
 
+//это для удобной нумерации текстурок
 enum class Type {
     Number1 = 0,
     Number2 = 1,
@@ -180,7 +180,10 @@ public:
         for (auto& it : _Content)
             it.resize(d.size, { 'n', Type::None});
     }
-
+    
+    
+    //генерация карты, включая рандомное заполнение
+    
     void generate(size_t level, sf::Vector2u point) {
         auto& d = difficulties[level];
         _Bombs = d.bombs;
@@ -193,7 +196,7 @@ public:
 
         std::random_device rd;
 
-        //filling bombs
+        //заполнение бомб
         for (size_t i = 0; i != _Bombs; i++) {
             std::uniform_int_distribution <size_t> dist(0, unfilled.size() - 1);
             size_t pos = dist(rd);
@@ -207,7 +210,7 @@ public:
         }
         //std::cout << '\n';
 
-        //update space around bombs
+        //заполнение чиселок вокруг бомб
         for (size_t i = 0; i != _Content.size(); i++) {
             for (size_t j = 0; j != _Content[i].size(); j++) {
                 if (_Content[i][j].second == Type::Bomb)
@@ -235,7 +238,9 @@ private:
                _HasBomb(x - 1, y) + _HasBomb(x + 1, y) +
                _HasBomb(x - 1, y + 1) + _HasBomb(x, y + 1) + _HasBomb(x + 1, y + 1);
     };
-    //recursive algorythm, but i don't like smth like that
+    
+    //рукурсивный алгоритм, чтобы открыть тайлы вокруг нажатого
+	//получается рекурсия только в том случае, если игрок нажимает по пустому тайлу
     void _OpenTiles(int x, int y) {
         if (y >= _Content.size() || y < 0 || x >= _Content.size() || x < 0)
             return;
@@ -326,6 +331,9 @@ private:
         }
     }
 
+    //такое чувство, что в qt попал
+	//там тоже объявление интерфейса внутри кода
+    
     void onCreate() override {
         _Label.setCharacterSize(42);
         _Exit.setCharacterSize(42);
@@ -447,7 +455,7 @@ private:
             }
         }
 
-        //part for drawing calculations
+        //расчёт вершин для карты
         for (size_t i = 0; i != map.size(); i++) {
             for (size_t j = 0; j != map[i].size(); j++) {
                 auto& top_lhs = _RenderRegion[(i + j * map.size()) * 4];
@@ -478,7 +486,8 @@ private:
                 bot_lhs.texCoords = sf::Vector2f(idx * 32.f, idy * 32.f + 32);
             }
         }
-        //TODO:
+        		//костыли
+
         if (_GameStatus != 'a') {
             states.erase("game");
             states.insert("over", std::shared_ptr <State>(new GameOverState(_GameStatus == 'w', _Flags)));
@@ -527,6 +536,9 @@ private:
         target.draw(_TimerLabel, states);
     }
 };
+
+//тоже костыли, но мне пофиг
+//нужно было создавать .cpp файлы
 
 MenuState::MenuState() {
     _Params = {
