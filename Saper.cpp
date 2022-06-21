@@ -10,6 +10,7 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <SFML/Audio.hpp>
 
 //sfml
 #include <SFML/Graphics.hpp>
@@ -19,8 +20,11 @@
 sf::RenderWindow window(sf::VideoMode(450, 800), "Minesweeper");
 sf::Font font;
 
+/**
+ *
+ */
 namespace alone {
-    //контейнер для управления текстурками
+    //container for managing textures
     class TextureManager {
     public:
         void load(std::string config_name) {
@@ -37,17 +41,21 @@ namespace alone {
             }
         }
 
-        sf::Texture& operator[](std::string key) {
+        sf::Texture &operator[](std::string key) {
             return _Content.at(key);
         }
 
     private:
-        std::unordered_map <std::string, sf::Texture> _Content;
+        std::unordered_map<std::string, sf::Texture> _Content;
     };
 
-    //базовое состояние игры, от него насследуются все остальные
+    //basic state
+    /**
+     *
+     */
     class State : public sf::Drawable {
         friend class StateMachine;
+
     public:
         enum Status {
             OnCreate,
@@ -56,22 +64,27 @@ namespace alone {
         };
 
     protected:
-        //не стали использовать делту, ибо это бесполезно в сапёре
+        //I don't use delta time, because in this project this is unnecessary
         virtual void update() = 0;
 
         virtual void onCreate() = 0;
+
         virtual void onDelete() = 0;
 
     private:
         Status _Status;
     };
 
+    /**
+     *
+     */
     class StateMachine {
     public:
-        void insert(std::string key, std::shared_ptr <State> value) {
+        void insert(std::string key, std::shared_ptr<State> value) {
             value->_Status = State::OnCreate;
             _Content.emplace(key, value);
         }
+
         void erase(std::string key) {
             auto it = _Content.find(key);
             if (it != _Content.end())
@@ -79,10 +92,10 @@ namespace alone {
         }
 
         void update() {
-           //была проблема с контейнером, нельзя во время иттерации элементы удалять
-			//поэтому мы сделали очередь для этих элементов
-            std::queue <std::string> onRemove;
-            for (auto& it : _Content) {
+            //I had an issue, because pointer was lost and iteration was breaked
+            //that's why I added queue for deleting states
+            std::queue<std::string> onRemove;
+            for (auto &it: _Content) {
                 switch (it.second->_Status) {
                     case State::OnCreate:
                         it.second->onCreate();
@@ -106,11 +119,15 @@ namespace alone {
         }
 
     private:
-        std::unordered_map <std::string, std::shared_ptr <State>> _Content;
+        std::unordered_map<std::string, std::shared_ptr<State>> _Content;
     };
 }
 
-//просто большой костыль, не обращайте внимания
+//it's just a big crutch
+//I'm too lazy to create own handler for buttons and keys
+/**
+ *
+ */
 namespace alone::input {
     bool preLmb = false, nowLmb = false;
     bool preRmb = false, nowRmb = false;
@@ -125,16 +142,16 @@ namespace alone::input {
     bool isClickedLeftButton() {
         return preLmb && !nowLmb;
     }
+
     bool isClickedRightButton() {
         return preRmb && !nowRmb;
     }
 }
 
 //just a crutch for fast naming
-template <class _T>
-using Matrix = std::vector <std::vector <_T>>;
+template<class _T>
+using Matrix = std::vector<std::vector<_T>>;
 
-//это для удобной нумерации текстурок
 enum class Type {
     Number1 = 0,
     Number2 = 1,
@@ -155,13 +172,16 @@ enum class Type {
 };
 
 //crutch
+/**
+ *
+ */
 struct difficulty_t {
     std::string name;
     size_t bombs;
     size_t size;
 };
 
-std::array <difficulty_t, 3> difficulties;
+std::array<difficulty_t, 3> difficulties;
 alone::TextureManager textures;
 alone::StateMachine states;
 
@@ -169,26 +189,26 @@ alone::StateMachine states;
 //size_t hash(std::pair <size_t, size_t> val) {
 //	return (val.first << 1) ^ (val.second >> 1);
 //}
-
+/**
+ *
+ */
 class Map {
     friend class GameState;
+
 public:
     void resize(size_t level) {
-        auto& d = difficulties[level];
+        auto &d = difficulties[level];
 
         _Content.resize(d.size);
-        for (auto& it : _Content)
-            it.resize(d.size, { 'n', Type::None});
+        for (auto &it: _Content)
+            it.resize(d.size, {'n', Type::None});
     }
-    
-    
-    //генерация карты, включая рандомное заполнение
-    
+
     void generate(size_t level, sf::Vector2u point) {
-        auto& d = difficulties[level];
+        auto &d = difficulties[level];
         _Bombs = d.bombs;
 
-        std::set <size_t> unfilled;
+        std::set<size_t> unfilled;
         for (size_t i = 0; i != d.size * d.size; i++)
             unfilled.emplace(i);
 
@@ -196,21 +216,21 @@ public:
 
         std::random_device rd;
 
-        //заполнение бомб
+        //filling bombs
         for (size_t i = 0; i != _Bombs; i++) {
-            std::uniform_int_distribution <size_t> dist(0, unfilled.size() - 1);
+            std::uniform_int_distribution<size_t> dist(0, unfilled.size() - 1);
             size_t pos = dist(rd);
             //std::cout << pos << ' ';
 
             auto it = unfilled.begin();
             std::advance(it, pos);
             size_t point = *it;
-            _Content[point % d.size][point / d.size] = { 'n', Type::Bomb};
+            _Content[point % d.size][point / d.size] = {'n', Type::Bomb};
             unfilled.erase(point);
         }
         //std::cout << '\n';
 
-        //заполнение чиселок вокруг бомб
+        //update space around bombs
         for (size_t i = 0; i != _Content.size(); i++) {
             for (size_t j = 0; j != _Content[i].size(); j++) {
                 if (_Content[i][j].second == Type::Bomb)
@@ -218,14 +238,14 @@ public:
 
                 size_t value = _DetectAround(i, j);
                 if (value != 0)
-                    _Content[i][j].second = (Type)(value - 1);
+                    _Content[i][j].second = (Type) (value - 1);
             }
         }
     }
 
 private:
     //n - unknown, r - revealed, f - flag
-    Matrix <std::pair <char, Type>> _Content;
+    Matrix<std::pair<char, Type>> _Content;
     size_t _Bombs;
 
     bool _HasBomb(size_t x, size_t y) {
@@ -233,14 +253,19 @@ private:
             return false;
         return _Content[x][y].second == Type::Bomb;
     };
+
     size_t _DetectAround(size_t x, size_t y) {
         return _HasBomb(x - 1, y - 1) + _HasBomb(x, y - 1) + _HasBomb(x + 1, y - 1) +
                _HasBomb(x - 1, y) + _HasBomb(x + 1, y) +
                _HasBomb(x - 1, y + 1) + _HasBomb(x, y + 1) + _HasBomb(x + 1, y + 1);
     };
-    
-    //рукурсивный алгоритм, чтобы открыть тайлы вокруг нажатого
-	//получается рекурсия только в том случае, если игрок нажимает по пустому тайлу
+
+    //recursive algorythm, but i don't like smth like that
+    /**
+     *
+     * @param x
+     * @param y
+     */
     void _OpenTiles(int x, int y) {
         if (y >= _Content.size() || y < 0 || x >= _Content.size() || x < 0)
             return;
@@ -265,6 +290,9 @@ private:
     }
 };
 
+/**
+ *
+ */
 class MenuState : public alone::State {
 public:
     MenuState();
@@ -282,12 +310,15 @@ private:
         }
     }
 
+    /**
+     *
+     */
     void onCreate() override {
         window.setSize(sf::Vector2u(450, 800));
         _Buttons.resize(_Params.size());
 
         for (size_t i = 0; i != _Buttons.size(); i++) {
-            auto& text = _Buttons[i];
+            auto &text = _Buttons[i];
             text.setString(_Params[i].first);
             text.setFont(font);
             text.setPosition(50, 100 + i * 50);
@@ -296,18 +327,30 @@ private:
             //std::cout << bounds.left << ' ' << bounds.top << ' ' << bounds.width << ' ' << bounds.height << '\n';
         }
     }
+
+    /**
+     *
+     */
     void onDelete() override {}
 
-    void draw(sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default) const override {
-        for (const auto& it : _Buttons)
+    /**
+     *
+     * @param target
+     * @param states
+     */
+    void draw(sf::RenderTarget &target, sf::RenderStates states = sf::RenderStates::Default) const override {
+        for (const auto &it: _Buttons)
             target.draw(it, states);
     }
 
 private:
-    std::vector <sf::Text> _Buttons;
-    std::array <std::pair <std::string, std::function <void()>>, 4> _Params;
+    std::vector<sf::Text> _Buttons;
+    std::array<std::pair<std::string, std::function<void()>>, 4> _Params;
 };
 
+/**
+ *
+ */
 class GameOverState : public alone::State {
 public:
     GameOverState(bool status, size_t bombsFound) {
@@ -327,13 +370,10 @@ private:
 
         if (bounds.contains(mouse.x, mouse.y) && alone::input::isClickedLeftButton()) {
             states.erase("over");
-            states.insert("menu", std::shared_ptr <State>(new MenuState()));
+            states.insert("menu", std::shared_ptr<State>(new MenuState()));
         }
     }
 
-    //такое чувство, что в qt попал
-	//там тоже объявление интерфейса внутри кода
-    
     void onCreate() override {
         _Label.setCharacterSize(42);
         _Exit.setCharacterSize(42);
@@ -368,14 +408,18 @@ private:
 
         window.setSize(sf::Vector2u(labelBounds.width + 80, labelBounds.height + 80 + exitBounds.height));
     }
+
     void onDelete() override {}
 
-    void draw(sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default) const override {
+    void draw(sf::RenderTarget &target, sf::RenderStates states = sf::RenderStates::Default) const override {
         target.draw(_Label, states);
         target.draw(_Exit, states);
     }
 };
 
+/**
+ *
+ */
 class GameState : public alone::State {
 public:
     GameState(size_t level) {
@@ -383,11 +427,11 @@ public:
     }
 
 private:
-    std::unique_ptr <Map> _GameMap;
+    std::unique_ptr<Map> _GameMap;
     const size_t _InterfaceOffset = 100;
     size_t _Flags = 0;
     sf::VertexArray _RenderRegion = sf::VertexArray(sf::Quads);
-    sf::Texture* _Atlas = nullptr;
+    sf::Texture *_Atlas = nullptr;
     size_t _Level;
     size_t _Revealed = 0;
     sf::Clock _Clock;
@@ -399,7 +443,7 @@ private:
         size_t edge_size = _GameMap->_Content.size();
         _RenderRegion.resize(4 * edge_size * edge_size);
 
-        auto& map = _GameMap->_Content;
+        auto &map = _GameMap->_Content;
 
         //update timer
         auto time = _Clock.getElapsedTime();
@@ -408,7 +452,8 @@ private:
 
         //part for clicking on map
         auto mouse = sf::Mouse::getPosition(window);
-        bool contains = mouse.x >= 0 && mouse.x <= edge_size * 32 && mouse.y >= _InterfaceOffset && mouse.y <= edge_size * 32 + _InterfaceOffset;
+        bool contains = mouse.x >= 0 && mouse.x <= edge_size * 32 && mouse.y >= _InterfaceOffset &&
+                        mouse.y <= edge_size * 32 + _InterfaceOffset;
         if (contains) {
             auto point = sf::Vector2u(mouse.x / 32, (mouse.y - _InterfaceOffset) / 32);
             if (alone::input::isClickedLeftButton()) {
@@ -455,21 +500,21 @@ private:
             }
         }
 
-        //расчёт вершин для карты
+        //part for drawing calculations
         for (size_t i = 0; i != map.size(); i++) {
             for (size_t j = 0; j != map[i].size(); j++) {
-                auto& top_lhs = _RenderRegion[(i + j * map.size()) * 4];
-                auto& top_rhs = _RenderRegion[(i + j * map.size()) * 4 + 1];
-                auto& bot_rhs = _RenderRegion[(i + j * map.size()) * 4 + 2];
-                auto& bot_lhs = _RenderRegion[(i + j * map.size()) * 4 + 3];
+                auto &top_lhs = _RenderRegion[(i + j * map.size()) * 4];
+                auto &top_rhs = _RenderRegion[(i + j * map.size()) * 4 + 1];
+                auto &bot_rhs = _RenderRegion[(i + j * map.size()) * 4 + 2];
+                auto &bot_lhs = _RenderRegion[(i + j * map.size()) * 4 + 3];
 
                 size_t id = 0;
                 if (DEBUG_MODE || map[i][j].first == 'r')
-                    id = (size_t)map[i][j].second;
+                    id = (size_t) map[i][j].second;
                 else if (map[i][j].first == 'f')
-                    id = (size_t)Type::Flag;
+                    id = (size_t) Type::Flag;
                 else
-                    id = (size_t)Type::Unknown;
+                    id = (size_t) Type::Unknown;
 
 
                 size_t idx = id % 4;
@@ -486,14 +531,15 @@ private:
                 bot_lhs.texCoords = sf::Vector2f(idx * 32.f, idy * 32.f + 32);
             }
         }
-        		//костыли
-
+        //TODO:
         if (_GameStatus != 'a') {
             states.erase("game");
-            states.insert("over", std::shared_ptr <State>(new GameOverState(_GameStatus == 'w', _Flags)));
+            states.insert("over", std::shared_ptr<State>(new GameOverState(_GameStatus == 'w', _Flags)));
         }
     }
-
+    /**
+     *
+     */
     void onCreate() override {
         _Clock.restart();
 
@@ -524,11 +570,14 @@ private:
             _TimerLabel.setCharacterSize(24);
         }
     }
+    /**
+     *
+     */
     void onDelete() override {
         _GameMap.reset(nullptr);
     }
 
-    void draw(sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default) const override {
+    void draw(sf::RenderTarget &target, sf::RenderStates states = sf::RenderStates::Default) const override {
         states.texture = _Atlas;
         target.draw(_RenderRegion, states);
 
@@ -537,21 +586,21 @@ private:
     }
 };
 
-//тоже костыли, но мне пофиг
-//нужно было создавать .cpp файлы
-
+    /**
+     *
+     */
 MenuState::MenuState() {
     _Params = {
             std::make_pair(std::string("Easy"), []() {
-                states.insert("game", std::shared_ptr <alone::State>(new GameState(0)));
+                states.insert("game", std::shared_ptr<alone::State>(new GameState(0)));
                 states.erase("menu");
             }),
             std::make_pair(std::string("Medium"), []() {
-                states.insert("game", std::shared_ptr <alone::State>(new GameState(1)));
+                states.insert("game", std::shared_ptr<alone::State>(new GameState(1)));
                 states.erase("menu");
             }),
             std::make_pair(std::string("Hard"), []() {
-                states.insert("game", std::shared_ptr <alone::State>(new GameState(2)));
+                states.insert("game", std::shared_ptr<alone::State>(new GameState(2)));
                 states.erase("menu");
             }),
             std::make_pair(std::string("Exit"), []() {
@@ -560,21 +609,48 @@ MenuState::MenuState() {
     };
 }
 
+//void music() {
+//    Music music;
+//
+//
+//    music.openFromFile("MainMusic.ogg");
+//    music.setVolume(50);
+//
+//    music.play();
+//
+//    //Music music;
+//
+//}
+
+
 //usually I add one big context struct, where defined every important controller, but now it's enough
+/**
+ *
+ */
 void init() {
     textures.load("assets/textures/include.txt");
 
-    difficulties[0] = { "Easy", 10, 8 };
-    difficulties[1] = { "Medium", 20, 10 };
-    difficulties[2] = { "Hard", 70, 20 };
+    difficulties[0] = {"Easy", 10, 8};
+    difficulties[1] = {"Medium", 20, 10};
+    difficulties[2] = {"Hard", 70, 20};
 
     font.loadFromFile("assets/font.ttf");
 
-    states.insert("menu", std::shared_ptr <alone::State>(new MenuState()));
+    states.insert("menu", std::shared_ptr<alone::State>(new MenuState()));
 }
-
+/**
+ *
+ * @return
+ */
 int main() {
     init();
+    sf::Music music;
+
+
+    music.openFromFile("mysaca.ogg");
+    music.setVolume(50);
+
+    music.play();
 
     while (window.isOpen()) {
         sf::Event event;
