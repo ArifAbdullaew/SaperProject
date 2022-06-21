@@ -10,6 +10,9 @@ find_package(SFML COMPONENTS graphics window system audio)
 add_executable(untitled1 main.cpp)
 target_link_libraries(untitled1 PUBLIC sfml-graphics sfml-window sfml-system sfml-audio sfml-network)
 
+#enable_testing()
+#add_subdirectory(doctest)
+
 #file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/openal32.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 #file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/htmlimage.png DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 #file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/audio DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
