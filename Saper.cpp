@@ -17,6 +17,8 @@
 
 #define DEBUG_MODE 0
 
+using namespace sf;
+
 sf::RenderWindow window(sf::VideoMode(450, 800), "Minesweeper");
 sf::Font font;
 
@@ -1158,8 +1160,11 @@ void init() {
 
 int main() {
     init();
-
-    sf::Music music;
+	
+	/**
+	* Музыкальное сопровождение
+	*/
+    Music music;
 
 
     music.openFromFile("audio/mysaca.ogg");
