@@ -19,8 +19,8 @@
 
 using namespace sf;
 
-sf::RenderWindow window(sf::VideoMode(450, 800), "Minesweeper");
-sf::Font font;
+RenderWindow window(sf::VideoMode(450, 800), "Minesweeper");
+Font font;
 
 namespace alone {
     /**
