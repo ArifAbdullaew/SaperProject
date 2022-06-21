@@ -1162,7 +1162,7 @@ int main() {
     sf::Music music;
 
 
-    music.openFromFile("mysaca.ogg");
+    music.openFromFile("audio/mysaca.ogg");
     music.setVolume(50);
 
     music.play();
