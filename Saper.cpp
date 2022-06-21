@@ -40,7 +40,7 @@ namespace alone {
                  * загружается только из этой папки, но сам файл может быть с кастомным именем
                  */
                 sf::Texture texture;
-                texture.loadFromFile("assets/textures/" + temp);
+                texture.loadFromFile("material/textures/" + temp);
                 /**
                  * Вставка в контейнер
                  */
