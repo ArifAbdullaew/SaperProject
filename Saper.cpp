@@ -40,7 +40,7 @@ namespace alone {
                  * загружается только из этой папки, но сам файл может быть с кастомным именем
                  */
                 sf::Texture texture;
-                texture.loadFromFile("material/textures/" + temp);
+                texture.loadFromFile("assets/textures/" + temp);
                 /**
                  * Вставка в контейнер
                  */
@@ -993,9 +993,9 @@ private:
                     id = (size_t) Type::Unknown;
 
 
-                    /**
-                     * это id с самой текстурами, так как текстура имеет квадратную форму
-                     */
+                /**
+                 * это id с самой текстурами, так как текстура имеет квадратную форму
+                 */
                 size_t idx = id % 4;
                 size_t idy = id / 4;
 
@@ -1118,15 +1118,15 @@ MenuState::MenuState() {
      */
     _Params = {
             std::make_pair(std::string("Easy"), []() {
-                states.insert("game", std::shared_ptr <alone::State>(new GameState(0)));
+                states.insert("game", std::shared_ptr<alone::State>(new GameState(0)));
                 states.erase("menu");
             }),
             std::make_pair(std::string("Medium"), []() {
-                states.insert("game", std::shared_ptr <alone::State>(new GameState(1)));
+                states.insert("game", std::shared_ptr<alone::State>(new GameState(1)));
                 states.erase("menu");
             }),
             std::make_pair(std::string("Hard"), []() {
-                states.insert("game", std::shared_ptr <alone::State>(new GameState(2)));
+                states.insert("game", std::shared_ptr<alone::State>(new GameState(2)));
                 states.erase("menu");
             }),
             std::make_pair(std::string("Exit"), []() {
@@ -1141,9 +1141,9 @@ void init() {
     /**
      * заполнением параметров уровня сложности
      */
-    difficulties[0] = { "Easy", 10, 8 };
-    difficulties[1] = { "Medium", 20, 10 };
-    difficulties[2] = { "Hard", 70, 20 };
+    difficulties[0] = {"Easy", 10, 8};
+    difficulties[1] = {"Medium", 20, 10};
+    difficulties[2] = {"Hard", 70, 20};
 
     /**
      * погружаем шрифт
@@ -1153,7 +1153,7 @@ void init() {
     /**
      * добавляем меню как активное состояние игры
      */
-    states.insert("menu", std::shared_ptr <alone::State>(new MenuState()));
+    states.insert("menu", std::shared_ptr<alone::State>(new MenuState()));
 }
 
 int main() {
