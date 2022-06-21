@@ -7,7 +7,7 @@ set(SFML_STATIC_LIBRARIES TRUE)
 find_package(SFML COMPONENTS graphics window system audio)
 
 
-add_executable(saper main.cpp)
+add_executable(saper saper.cpp)
 target_link_libraries(saper PUBLIC sfml-graphics sfml-window sfml-system sfml-audio sfml-network)
 
 enable_testing()
