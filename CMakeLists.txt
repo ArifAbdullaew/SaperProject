@@ -16,7 +16,7 @@ add_subdirectory(doctest)
 add_executable(saper_test test/test.cpp)
 target_link_libraries(saper_test PUBLIC doctest sfml-audio sfml-graphics sfml-window sfml-system))
 
-#file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/openal32.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/openal32.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 #file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/htmlimage.png DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 #file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/audio DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/material DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
