@@ -7,16 +7,15 @@ set(SFML_STATIC_LIBRARIES TRUE)
 find_package(SFML COMPONENTS graphics window system audio)
 
 
-add_executable(saper saper.cpp)
-target_link_libraries(saper PUBLIC sfml-graphics sfml-window sfml-system sfml-audio sfml-network)
+add_executable(SaperProject Saper.cpp)
+target_link_libraries(SaperProject PUBLIC sfml-graphics sfml-window sfml-system sfml-audio sfml-network)
 
 enable_testing()
 add_subdirectory(doctest)
 
-add_executable(saper_test test/test.cpp)
-target_link_libraries(saper_test PUBLIC doctest sfml-audio sfml-graphics sfml-window sfml-system)
+add_executable(SaperProject_test Source/test.cpp)
+target_link_libraries(SaperProject_test PUBLIC doctest sfml-audio sfml-graphics sfml-window sfml-system sfml-network)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/openal32.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
-#file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/htmlimage.png DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/audio DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/material DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
