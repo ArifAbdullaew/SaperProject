@@ -1,4 +1,4 @@
-#include "src.h"
+//#include "src.h"
 
 void alone::TextureManager::load(std::string config_name) {
     std::ifstream file(config_name);

@@ -1,5 +1,5 @@
 #include <doctest.h>
-#include "src.cpp"
+#include "src.h"
 
 TEST_CASE("Tesing game over state.")
 {
